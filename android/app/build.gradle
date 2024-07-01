@@ -35,6 +35,12 @@ android {
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
+    packagingOptions {
+        // Fixes duplicate libraries build issue,
+        // when your project uses more than one plugin that depend on C++ libs.
+        pickFirst 'lib/**/libc++_shared.so'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -71,6 +77,9 @@ android {
          shrinkResources true
             minifyEnabled true
             signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile(
+                    'proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
         }
     }
 
