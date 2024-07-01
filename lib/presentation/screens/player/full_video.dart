@@ -49,7 +49,7 @@ class _FullVideoScreenState extends State<FullVideoScreen> {
 
     // Initialize the video player controller
     _videoPlayerController = VideoPlayerController.networkUrl(
-      Uri.http(widget.link),
+      Uri.https(widget.link),
       // Use this option to enable looping if needed
       // looping: true,
     );
