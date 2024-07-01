@@ -65,6 +65,7 @@ dependencies:
   dart_vlc_ffi: ^0.2.0+1
   media_kit_video: ^1.2.4
   visibility_detector: ^0.4.0+2
+  flutter_vlc_player: ^7.4.2
 
 dependency_overrides:
   win32: any
