@@ -48,8 +48,8 @@ class _FullVideoScreenState extends State<FullVideoScreen> {
     Wakelock.enable();
 
     // Initialize the video player controller
-    _videoPlayerController = VideoPlayerController.network(
-      widget.link,
+    _videoPlayerController = VideoPlayerController.networkUrl(
+      Uri.http(widget.link),
       // Use this option to enable looping if needed
       // looping: true,
     );

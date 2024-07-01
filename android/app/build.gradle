@@ -50,7 +50,7 @@ android {
 
     defaultConfig {
         applicationId "com.oohlivetv.appiptv"
-        minSdkVersion 20
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
