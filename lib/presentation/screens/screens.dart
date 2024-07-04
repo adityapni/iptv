@@ -4,14 +4,15 @@ import 'dart:developer';
 import 'package:OOHLIVETV_iptv/presentation/widgets/IntroVideo.dart';
 import 'package:universal_html/html.dart' as html_text;
 
-import 'package:dart_vlc_ffi/dart_vlc_ffi.dart';
-import 'package:filling_slider/filling_slider.dart';
+// import 'package:dart_vlc_ffi/dart_vlc_ffi.dart';
+// import 'package:filling_slider/filling_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+// import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

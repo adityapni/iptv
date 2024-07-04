@@ -1,33 +1,40 @@
 part of '../screens.dart';
 
 class StreamPlayerPage extends StatefulWidget {
-  bool isRandomImageBannerVisible;
-
-  StreamPlayerPage({
-    super.key,
-    this.isRandomImageBannerVisible = true,
-    required this.videoPlayerController,
-  });
-
-  final VideoPlayerController videoPlayerController;
+  const StreamPlayerPage({super.key, required this.videoUrl});
+  final String videoUrl;
 
   @override
-  _StreamPlayerPageState createState() => _StreamPlayerPageState();
+  State<StreamPlayerPage> createState() => _StreamPlayerPageState();
 }
 
 class _StreamPlayerPageState extends State<StreamPlayerPage> {
+  late VideoPlayerController _videoPlayerController;
   bool isPlayed = true;
   bool showControllersVideo = true;
+  bool isRandomImageBannerVisible = true;
 
   @override
   void initState() {
-    Wakelock.enable();
     super.initState();
+    Wakelock.enable();
+    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
+      ..initialize().then((_) {
+        setState(() {
+          _videoPlayerController.play();
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController.dispose();
+    Wakelock.disable();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('test when video play');
     return Ink(
       color: Colors.black,
       width: getSize(context).width,
@@ -35,7 +42,22 @@ class _StreamPlayerPageState extends State<StreamPlayerPage> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          VideoPlayer(widget.videoPlayerController),
+          if (isRandomImageBannerVisible)
+            RandomImageBanner(
+              onClose: () {
+                setState(() {
+                  isRandomImageBannerVisible = false;
+                });
+              },
+            ), 
+          Center(
+            child: _videoPlayerController.value.isInitialized
+                ? AspectRatio(
+                    aspectRatio: _videoPlayerController.value.aspectRatio,
+                    child: VideoPlayer(_videoPlayerController),
+                  )
+                : const CircularProgressIndicator(),
+          ),
           GestureDetector(
             onTap: () {
               debugPrint("click");
@@ -44,29 +66,13 @@ class _StreamPlayerPageState extends State<StreamPlayerPage> {
               });
             },
             child: Container(
-                width: getSize(context).width,
-                height: getSize(context).height,
-                color: Colors.transparent,
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    if (widget.isRandomImageBannerVisible)
-                      Container(
-                        width: 400 > 80.w ? 80.w : 400,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: RandomImageBanner(
-                          onClose: () {
-                            setState(() {
-                              widget.isRandomImageBannerVisible =
-                              false; // Handle the banner closure as needed
-                            });
-                          },
-                        ),
-                      ),
-                    AdmobWidget.getBanner(),
-                  ],
-                )),
+              width: getSize(context).width,
+              height: getSize(context).height,
+              color: Colors.transparent,
+            ),
           ),
+
+          ///Controllers
           BlocBuilder<VideoCubit, VideoState1>(
             builder: (context, state) {
               if (!state.isFull) {
@@ -108,14 +114,15 @@ class _StreamPlayerPageState extends State<StreamPlayerPage> {
                             IconButton(
                               focusColor: kColorFocus,
                               onPressed: () {
-                                if (isPlayed) {
-                                  widget.videoPlayerController.pause();
-                                  isPlayed = false;
-                                } else {
-                                  widget.videoPlayerController.play();
-                                  isPlayed = true;
-                                }
-                                setState(() {});
+                                setState(() {
+                                  if (_videoPlayerController.value.isPlaying) {
+                                    _videoPlayerController.pause();
+                                    isPlayed = false;
+                                  } else {
+                                    _videoPlayerController.play();
+                                    isPlayed = true;
+                                  }
+                                });
                               },
                               icon: Icon(
                                 isPlayed

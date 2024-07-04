@@ -2,7 +2,7 @@
 part of '../screens.dart';
 
 class LiveChannelsScreen extends StatefulWidget {
-  const LiveChannelsScreen({Key? key, required this.catyId});
+  const LiveChannelsScreen({super.key, required this.catyId});
   final String catyId;
 
   @override
@@ -23,9 +23,9 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
   @override
   void initState() {
     context.read<ChannelsBloc>().add(GetLiveChannelsEvent(
-          catyId: widget.catyId,
-          typeCategory: TypeCategory.live,
-        ));
+      catyId: widget.catyId,
+      typeCategory: TypeCategory.live,
+    ));
     super.initState();
   }
 
@@ -33,7 +33,7 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
   void dispose() async {
     _remoteFocus.dispose();
     super.dispose();
-    _videoPlayerController?.dispose();
+    _videoPlayerController?.dispose(); // Dispose of the video controller
   }
 
   @override
@@ -104,8 +104,10 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                                                 : () {
                                                     context
                                                         .read<FavoritesCubit>()
-                                                        .addLive(channelLive,
-                                                            isAdd: !isLiked);
+                                                        .addLive(
+                                                      channelLive,
+                                                      isAdd: !isLiked,
+                                                    );
                                                   },
                                             onSearch: (String value) {
                                               setState(() {
@@ -136,19 +138,19 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                                           builder: (context, state) {
                                             if (state is ChannelsLoading) {
                                               return const Center(
-                                                  child:
-                                                      CircularProgressIndicator());
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              );
                                             } else if (state
                                                 is ChannelsLiveSuccess) {
                                               final categories = state.channels;
 
                                               List<ChannelLive> searchList =
                                                   categories
-                                                      .where((element) =>
-                                                          element.name!
-                                                              .toLowerCase()
-                                                              .contains(
-                                                                  keySearch))
+                                                      .where((element) => element
+                                                          .name!
+                                                          .toLowerCase()
+                                                          .contains(keySearch))
                                                       .toList();
 
                                               return GridView.builder(
@@ -174,10 +176,9 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                                                   childAspectRatio: 7,
                                                 ),
                                                 itemBuilder: (_, i) {
-                                                  final model =
-                                                      keySearch.isEmpty
-                                                          ? categories[i]
-                                                          : searchList[i];
+                                                  final model = keySearch.isEmpty
+                                                      ? categories[i]
+                                                      : searchList[i];
 
                                                   final link =
                                                       "${userAuth.serverInfo!.serverUrl}/${userAuth.userInfo!.username}/${userAuth.userInfo!.password}/${model.streamId}";
@@ -187,78 +188,76 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                                                     image: model.streamIcon,
                                                     link: link,
                                                     isSelected: selectedVideo ==
-                                                            null
-                                                        ? false
-                                                        : selectedVideo == i,
+                                                        null
+                                                            ? false
+                                                            : selectedVideo == i,
                                                     onTap: () async {
                                                       try {
-                                                        if (selectedVideo ==
-                                                                i &&
-                                                            _videoPlayerController !=
-                                                                null) {
-                                                          // OPEN FULL SCREEN
-                                                          debugPrint(
-                                                              "///////////// OPEN FULL STREAM /////////////");
-                                                          context
-                                                              .read<
-                                                                  VideoCubit>()
-                                                              .changeUrlVideo(
-                                                                  true);
-                                                        } else {
-                                                          if (_videoPlayerController !=
-                                                                  null &&
-                                                              _videoPlayerController!
+                                                        if (_videoPlayerController !=
+                                                                null &&
+                                                            _videoPlayerController!
+                                                                    .value
+                                                                    .isInitialized) {
+                                                          if (selectedVideo ==
+                                                                  i &&
+                                                              await _videoPlayerController!
                                                                   .value
                                                                   .isPlaying) {
-                                                            if (mounted) {
-                                                              _videoPlayerController!
-                                                                  .pause();
-                                                              // _videoPlayerController =
-                                                              //     null;
-                                                              setState(() {});
-                                                            }
-                                                          }
-
-                                                          await Future.delayed(
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          100))
-                                                              .then((value) {
-                                                            ///Play new Stream
+                                                            // OPEN FULL SCREEN
                                                             debugPrint(
-                                                                "Play new Stream");
-                                                            _videoPlayerController
-                                                                ?.dispose();
+                                                                "///////////// OPEN FULL STREAM /////////////");
+                                                            context
+                                                                .read<
+                                                                    VideoCubit>()
+                                                                .changeUrlVideo(
+                                                                    true);
+                                                          } else {
+                                                            await _videoPlayerController!
+                                                                .pause();
+                                                            _videoPlayerController =
+                                                                null;
+                                                            await Future.delayed(
+                                                                const Duration(
+                                                                    milliseconds:
+                                                                        100));
+
                                                             selectedVideo = i;
                                                             _videoPlayerController =
-                                                                VideoPlayerController
-                                                                    .networkUrl(
-                                                              Uri.parse(link),
-                                                            );
-                                                            _videoPlayerController!
-                                                                .initialize()
-                                                                .then((value) {
-                                                              if (_videoPlayerController!
-                                                                  .value
-                                                                  .isInitialized) {
-                                                                _videoPlayerController!
-                                                                    .play();
-                                                                setState(() {
-                                                                  if (mounted) {
+                                                                VideoPlayerController.networkUrl(
+                                                                    Uri.parse(
+                                                                        link))
+                                                                  ..initialize()
+                                                                      .then(
+                                                                          (_) {
+                                                                    _videoPlayerController!
+                                                                        .play();
+                                                                    setState(() {
+                                                                      channelLive =
+                                                                          model;
+                                                                      selectedStreamId =
+                                                                          model
+                                                                              .streamId;
+                                                                    });
+                                                                  });
+                                                          }
+                                                        } else {
+                                                          selectedVideo = i;
+                                                          _videoPlayerController =
+                                                              VideoPlayerController.networkUrl(
+                                                                  Uri.parse(
+                                                                      link))
+                                                                ..initialize()
+                                                                    .then((_) {
+                                                                  _videoPlayerController!
+                                                                      .play();
+                                                                  setState(() {
                                                                     channelLive =
                                                                         model;
                                                                     selectedStreamId =
                                                                         model
                                                                             .streamId;
-                                                                  }
+                                                                  });
                                                                 });
-                                                              } else {
-                                                                log("video file load failed");
-                                                              }
-                                                            }).catchError((e) {
-                                                              log("controller.initialize() error occurs: $e");
-                                                            });
-                                                          });
                                                         }
                                                       } catch (e) {
                                                         debugPrint("error: $e");
@@ -292,8 +291,9 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                                           Expanded(
                                             flex: 1,
                                             child: StreamPlayerPage(
-                                              videoPlayerController:
-                                                  _videoPlayerController!,
+                                              videoUrl: _videoPlayerController != null && _videoPlayerController!.value.isInitialized
+                                                  ? _videoPlayerController!.dataSource
+                                                  : '',
                                             ),
                                           ),
                                           Builder(
@@ -316,22 +316,15 @@ class _ListChannelsScreen extends State<LiveChannelsScreen> {
                           ],
                         ),
                       ),
-                      // Add RandomImageBanner here
-                      if (selectedVideo == null && isRandomImageBannerVisible)
-                        Positioned(
-                          top: 0,
-                          width: 250 > 70.w ? 70.w : 250,
-                          child: RandomImageBanner(
-                            onClose: () {
-                              setState(() {
-                                isRandomImageBannerVisible =
-                                    false; // Handle the banner closure as needed
-                              });
-                            },
-                          ),
+                      if (selectedVideo == null) AdmobWidget.getBanner(),
+                      if (isRandomImageBannerVisible)
+                        RandomImageBanner(
+                          onClose: () {
+                            setState(() {
+                              isRandomImageBannerVisible = false;
+                            });
+                          },
                         ),
-                      if(selectedVideo == null )
-                        AdmobWidget.getBanner(),
                     ],
                   ),
                 );
@@ -356,57 +349,57 @@ class CardEpgStream extends StatelessWidget {
       child: streamId == null
           ? const SizedBox()
           : FutureBuilder<List<EpgModel>>(
-              future: IpTvApi.getEPGbyStreamId(streamId ?? ""),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                } else if (!snapshot.hasData) {
-                  return const SizedBox();
-                }
-                final list = snapshot.data;
+        future: IpTvApi.getEPGbyStreamId(streamId ?? ""),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (!snapshot.hasData) {
+            return const SizedBox();
+          }
+          final list = snapshot.data;
 
-                return Container(
-                  decoration: const BoxDecoration(
-                      color: kColorCardLight,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                      )),
-                  margin: const EdgeInsets.only(top: 10),
-                  child: ListView.separated(
-                    itemCount: list!.length,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 10,
-                    ),
-                    itemBuilder: (_, i) {
-                      final model = list[i];
-                      String description =
-                          utf8.decode(base64.decode(model.description ?? ""));
+          return Container(
+            decoration: const BoxDecoration(
+                color: kColorCardLight,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                )),
+            margin: const EdgeInsets.only(top: 10),
+            child: ListView.separated(
+              itemCount: list!.length,
+              padding: const EdgeInsets.symmetric(
+                vertical: 10,
+                horizontal: 10,
+              ),
+              itemBuilder: (_, i) {
+                final model = list[i];
+                String description =
+                utf8.decode(base64.decode(model.description ?? ""));
 
-                      String title =
-                          utf8.decode(base64.decode(model.title ?? ""));
-                      return CardEpg(
-                        title:
-                            "${getTimeFromDate(model.start ?? "")} - ${getTimeFromDate(model.end ?? "")} - $title",
-                        description: description,
-                        isSameTime: checkEpgTimeIsNow(
-                            model.start ?? "", model.end ?? ""),
-                      );
-                    },
-                    separatorBuilder: (_, i) {
-                      return const SizedBox(
-                        height: 10,
-                      );
-                    },
-                  ),
+                String title =
+                utf8.decode(base64.decode(model.title ?? ""));
+                return CardEpg(
+                  title:
+                  "${getTimeFromDate(model.start ?? "")} - ${getTimeFromDate(model.end ?? "")} - $title",
+                  description: description,
+                  isSameTime: checkEpgTimeIsNow(
+                      model.start ?? "", model.end ?? ""),
                 );
-              }),
+              },
+              separatorBuilder: (_, i) {
+                return const SizedBox(
+                  height: 10,
+                );
+              },
+            ),
+          );
+        }),
     );
   }
 }
@@ -414,9 +407,9 @@ class CardEpgStream extends StatelessWidget {
 class CardEpg extends StatelessWidget {
   const CardEpg(
       {super.key,
-      required this.title,
-      required this.description,
-      required this.isSameTime});
+        required this.title,
+        required this.description,
+        required this.isSameTime});
   final String title;
   final String description;
   final bool isSameTime;
